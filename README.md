@@ -1,7 +1,3 @@
-# project_template
-Template for future personal projects, including issues, README prompts and subfolders.
-# DELETE ABOVE
-
 # Project Title
 
 ### Brief, 2 sentence description saying why this project is important, e.g.
