@@ -16,13 +16,17 @@ ________________________________________________________________________________
 _____________________________________________________________________________________________________________________________
 
 
-### Model performance on validation and test data
+### Exploration of the text data
 
 
 _____________________________________________________________________________________________________________________________
 
-### Model interpretation
+### Statistical tests comparing salaries between ML Engineers and Data Scientists
 
+
+Limitations of data: small sample size of 390 total (186 for DS; 204 for ML Engineers)
+
+* only from those where 
 
 _____________________________________________________________________________________________________________________________
 
