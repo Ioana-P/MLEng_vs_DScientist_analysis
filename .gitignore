@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Common storage files
+*.pkl
+*.csv
+*.pickle
+*.tsv
