@@ -51,7 +51,7 @@ ________________________________________________________________________________
 ![yearly_salary](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/yearly_salary_dist.jpeg)
 
 
-Looking at the descriptions bigrams, we can see some signs of divergence in general skills demanded by the job type: ML Eng having a stronger emphasis on 'best practice', 'large scale' and 'end [to] end' work. Both feature AI, although ML Eng slightly more.There are fewer clearer patterns across DS. Let's try this again with the industry stopwords included.
+Looking at the descriptions bigrams below (where we've included industry stopwords, such as "data", "software"), we can see some signs of divergence in general skills demanded by the job type: ML Eng having a stronger emphasis on 'best practice', 'large scale' and 'end [to] end' work. Both feature AI, although ML Eng slightly more.There are fewer clearer patterns across DS. 
 
 
 ![descr bigrams - indutry sws incl](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/bigrams_across_ds_and_ml_wsws.jpeg)
