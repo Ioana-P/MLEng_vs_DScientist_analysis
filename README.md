@@ -44,7 +44,7 @@ ________________________________________________________________________________
 ![hourly_pay](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/salary_per_hour.jpeg)
 
 
-![yearly_salary](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/yearl_salary_dist.jpeg)
+![yearly_salary](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/yearly_salary_dist.jpeg)
 
 
 _____________________________________________________________________________________________________________________________
