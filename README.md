@@ -31,6 +31,10 @@ This project was undertaken for 3 reasons:
     * Excluding posts that DON'T mention cloud services at all, the mean number of times an ML job post mentions cloud services is 3.39
     * Excluding posts that DON'T mention cloud services at all, the mean number of times an DS job post mentions cloud services is 2.22
     
+![acronyms](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/acronyms_across_ds_and_ml.jpeg)
+
+![acronyms in titles](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/acronyms_across_ds_and_ml_TITLES.jpeg)
+
 ## Advertising salary:
 The percentage of jobs in our sample that openly state any kind of salary range is 34.37
     * The percentage of DS jobs in our sample that openly state any kind of salary range is     37.06
@@ -48,13 +52,12 @@ ________________________________________________________________________________
 
 
 Looking at the descriptions bigrams, we can see some signs of divergence in general skills demanded by the job type: ML Eng having a stronger emphasis on 'best practice', 'large scale' and 'end [to] end' work. Both feature AI, although ML Eng slightly more.There are fewer clearer patterns across DS. Let's try this again with the industry stopwords included.
-![description bigrams](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/tree/master/acronyms_across_ds_and_ml.jpeg)
 
 
 ![descr bigrams - indutry sws incl](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/acronyms_across_dl_and_ml_wsws.jpeg)
 
 
-![description bigrams with industry stopwords included](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/bigrams_across_ds_and_ml_nosws.jpeg)
+
 _____________________________________________________________________________________________________________________________
 
 ### Statistical tests comparing salaries between ML Engineers and Data Scientists
