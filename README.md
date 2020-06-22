@@ -47,6 +47,14 @@ ________________________________________________________________________________
 ![yearly_salary](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/yearly_salary_dist.jpeg)
 
 
+Looking at the descriptions bigrams, we can see some signs of divergence in general skills demanded by the job type: ML Eng having a stronger emphasis on 'best practice', 'large scale' and 'end [to] end' work. Both feature AI, although ML Eng slightly more.There are fewer clearer patterns across DS. Let's try this again with the industry stopwords included.
+![description bigrams](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/tree/master/acronyms_across_ds_and_ml.jpeg)
+
+
+![descr bigrams - indutry sws incl](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/tree/master/fig/acronyms_across_dl_and_ml_wsws.jpeg)
+
+
+![description bigrams with industry stopwords included](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/tree/master/bigrams_across_ds_and_ml_nosws.jpeg)
 _____________________________________________________________________________________________________________________________
 
 ### Statistical tests comparing salaries between ML Engineers and Data Scientists
