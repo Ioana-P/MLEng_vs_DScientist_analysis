@@ -51,10 +51,10 @@ Looking at the descriptions bigrams, we can see some signs of divergence in gene
 ![description bigrams](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/tree/master/acronyms_across_ds_and_ml.jpeg)
 
 
-![descr bigrams - indutry sws incl](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/tree/master/fig/acronyms_across_dl_and_ml_wsws.jpeg)
+![descr bigrams - indutry sws incl](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/acronyms_across_dl_and_ml_wsws.jpeg)
 
 
-![description bigrams with industry stopwords included](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/tree/master/bigrams_across_ds_and_ml_nosws.jpeg)
+![description bigrams with industry stopwords included](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/bigrams_across_ds_and_ml_nosws.jpeg)
 _____________________________________________________________________________________________________________________________
 
 ### Statistical tests comparing salaries between ML Engineers and Data Scientists
