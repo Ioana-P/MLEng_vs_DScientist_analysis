@@ -4,12 +4,17 @@ Advice and information about the job market for Data Scienstists and Machine Lea
 I wanted to have a look for myself at my own sampled data and see what conclusions I could draw from it.
 
 This project was undertaken for 3 reasons: 
-1. To investigate and test hypotheses about Data Scientists and ML Engineers;
-2. To test presuppositions about the job market for Data Scientists and ML Engineers and
+1. To investigate and test hypotheses about Data Scientists, Data Analysts and ML Engineers;
+2. To test presuppositions about the job market for Data Scientists / Analysts ML Engineers and
 3. To demonstrate and practice data retrieval via webscraping. 
 
-###### Therefore I retrieved job post data from Indeed.co.uk in late May 2020 using Selenium webdriver and BeautifulSoup. 
-###### I wrangled and analysed the data in Pandas, Seaborn, Matplotlib and NLTK. 
+*One important caveat I must mention about the data is this: although all of the data neatly categorised as either DS, DA or MLEng is shown clearly in my data analysis and exploration, if you had to go through each job post by title you will find plenty that say "Business Analyst", "Data Engineer" or "Data Science Researcher". This is because the main method by which the data was extracted was by entering the search terms and thus the jobs are categoried **by which search term retrieved them**. This speaks volumes to the fact that:
+a) there is significant semantic overlap between these terms;
+b) Many such job posts include the job search terms not in the title but in the description and 
+c) That our data acquisition process relies on the inner functioning of indeed.co.uk's internal search engine.
+
+###### Therefore I retrieved Data Scientist and ML Engineer job post data from Indeed.co.uk in late May 2020 using Selenium webdriver and BeautifulSoup. The same was done on 23rd of June for Data Analyst
+###### I wrangled and analysed the data in Pandas, MNLTK, Seaborn and Matplotlib. 
 
 
 ##### Here are 3 concrete questions I wanted to answer with this project:
@@ -32,9 +37,12 @@ This project was undertaken for 3 reasons:
     * Excluding posts that DON'T mention cloud services at all, the mean number of times an DS job post mentions cloud services is 2.22
     
 ## Advertising salary:
-The percentage of jobs in our sample that openly state any kind of salary range is 34.37
+From the sample of 2211 jobs we collected, the percentage of job posts where we have been unable to detect salary information is 61.7%
+
+Looking at the breakdown 
     * The percentage of DS jobs in our sample that openly state any kind of salary range is     37.06
     * The percentage of ML Eng jobs in our sample that openly state any kind of salary range is 32.21
+    * The percentage of DA jobs in our sample that openly state any kind of salary range is
 
 
     
