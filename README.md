@@ -36,9 +36,9 @@ c) That our data acquisition process relies on the inner functioning of indeed.c
     * Excluding posts that DON'T mention cloud services at all, the mean number of times an ML job post mentions cloud services is 3.39
     * Excluding posts that DON'T mention cloud services at all, the mean number of times an DS job post mentions cloud services is 2.22
     
-![acronyms](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/acronyms_across_ds_and_ml.jpeg)
+![acronyms](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/acronyms_across_ALL.jpeg)
 
-![acronyms in titles](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/acronyms_across_ds_and_ml_TITLES.jpeg)
+![acronyms in titles](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/acronyms_across_ALL_TITLES.jpeg)
 
 ## Advertising salary:
 From the sample of 2211 jobs we collected, the percentage of job posts where we have been unable to detect salary information is 61.7%
