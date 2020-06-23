@@ -36,6 +36,10 @@ c) That our data acquisition process relies on the inner functioning of indeed.c
     * Excluding posts that DON'T mention cloud services at all, the mean number of times an ML job post mentions cloud services is 3.39
     * Excluding posts that DON'T mention cloud services at all, the mean number of times an DS job post mentions cloud services is 2.22
     
+![acronyms](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/acronyms_across_ds_and_ml.jpeg)
+
+![acronyms in titles](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/acronyms_across_ds_and_ml_TITLES.jpeg)
+
 ## Advertising salary:
 From the sample of 2211 jobs we collected, the percentage of job posts where we have been unable to detect salary information is 61.7%
 
@@ -53,6 +57,13 @@ ________________________________________________________________________________
 
 
 ![yearly_salary](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/yearly_salary_dist.jpeg)
+
+
+Looking at the descriptions bigrams below (where we've included industry stopwords, such as "data", "software"), we can see some signs of divergence in general skills demanded by the job type: ML Eng having a stronger emphasis on 'best practice', 'large scale' and 'end [to] end' work. Both feature AI, although ML Eng slightly more.There are fewer clearer patterns across DS. 
+
+
+![descr bigrams - indutry sws incl](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/bigrams_across_ds_and_ml_wsws.jpeg)
+
 
 
 _____________________________________________________________________________________________________________________________
