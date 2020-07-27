@@ -44,6 +44,8 @@ from bs4 import BeautifulSoup
 from nltk.util import ngrams
 from nltk.collocations import BigramCollocationFinder
 from nltk.metrics import BigramAssocMeasures
+lemmy = WordNetLemmatizer()
+
 
 import warnings
 import sqlalchemy
@@ -334,7 +336,8 @@ def get_salary(dom, parser = 'html', regex_pattern_salary = ['£[0-9]*[,]*[0-9]+
                             per year, per week, per month.
      
      Returns a TUPLE:
-     salaries_final - (int) a single value of salary
+     salaries_final - (int / float) a single value of salary
+     salaries_final_adjusted - (float) - the hourly salary, calculated from whichever value was in the html
      salary_period - (str) for what time period the salary is declared for: Y - per year; 
                          M - per month, H - per hour, W - per week, D - per day
      """
@@ -448,6 +451,8 @@ def get_num_reviews(text, regex_pattern = '[0-9]*[,]*[0-9]* review[s]*'):
         num_review_int = int(re.sub('review[s]*', '', num_review_clean))
     return num_review_int
 
+def remove_reviews(text, regex_pattern = '[0-9]*[,]*[0-9]* review[s]*'):
+    return re.sub(regex_pattern, '', text)
 
 
 
