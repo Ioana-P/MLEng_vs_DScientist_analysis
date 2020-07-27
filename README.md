@@ -53,10 +53,10 @@ Looking at the breakdown
 _____________________________________________________________________________________________________________________________
 
 ### The Data at a Glance (EDA)
-![hourly_pay](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/salary_per_hour.jpeg)
+![hourly_pay](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/salary_per_hour.jpeg)
 
 
-![yearly_salary](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/yearly_salary_dist.jpeg)
+![yearly_salary](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/yearly_salary_dist.jpeg)
 
 
 Looking at the descriptions bigrams below (where we've included industry stopwords, such as "data", "software"), we can see some signs of divergence in general skills demanded by the job type: ML Eng having a stronger emphasis on 'best practice', 'large scale' and 'end [to] end' work. Both feature AI, although ML Eng slightly more.There are fewer clearer patterns across DS. 
