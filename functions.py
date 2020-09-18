@@ -9,19 +9,7 @@ import os
 from dotenv import load_dotenv
 import requests as req
 load_dotenv()
-import time
 
-
-from sklearn.cluster import KMeans
-import scipy.cluster.hierarchy as shc
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-
-import requests as req
-from dotenv import load_dotenv
-load_dotenv()
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -46,12 +34,20 @@ from nltk.collocations import BigramCollocationFinder
 from nltk.metrics import BigramAssocMeasures
 lemmy = WordNetLemmatizer()
 
-
-import warnings
-import sqlalchemy
-from sqlalchemy import create_engine
-
 import wordcloud
+
+from sklearn.decomposition import LatentDirichletAllocation as LDA
+from nltk.stem import WordNetLemmatizer as wlemmy
+from nltk import word_tokenize       
+
+
+class LemmaTokenizer(object):
+    def __init__(self, tokenizer, stopwords):
+        self.wnl = WordNetLemmatizer()
+        self.tokenizer = tokenizer
+        self.stopwords = stopwords
+    def __call__(self, articles):
+        return [self.wnl.lemmatize(token) for token in self.tokenizer.tokenize(articles) if token not in self.stopwords]
 
 import selenium as sl
 from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException
@@ -506,13 +502,23 @@ def plot_freqdist_from_series(pd_series, tokenizer_obj, stop_words_list,
 
     return f_dist_dict
 
-def gen_cloud(data, max_words_num, 
+def gen_cloud(data, max_words_num : int, stop_words = None,
               background_color = 'black', height = 300, 
               randomstate=42, fig_size=(12,12),
-             cloud_title='Word Cloud'):
+             cloud_title='Word Cloud', 
+             ):
     cloud = wordcloud.WordCloud(max_words=max_words_num, background_color=background_color, height=height, random_state=randomstate)
     plt.figure(figsize=fig_size)
-    cloud.generate(' '.join(data))
+    text_data = ' '.join(data)
+    if stop_words:
+        text_data_clean = []
+        for word in text_data.split(' '):
+            if word.lower() not in stop_words:
+                text_data_clean.append(word)
+        text_data_clean = ' '.join(text_data_clean)
+    else:
+        text_data_clean = text_data
+    cloud.generate(text_data_clean)
     plt.imshow(cloud)
     plt.title(cloud_title)
     plt.axis("off")
@@ -588,7 +594,7 @@ def plot_term_bar(final_title,
     return merged_df
     
 
-    
+
     
 
 
