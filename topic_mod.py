@@ -57,7 +57,7 @@ def df_to_dt(dataframe, text_column : str, vectoriser_obj, keep_non_text=True):
     Returns: 
     new_df / vect_train_df - dataframe with/out non-text columns on the left and document term matrix on the right
     """
-    data = dataframe #.copy()
+    data = dataframe
     
     text_series = data[text_column]
     
@@ -87,10 +87,10 @@ def dt_to_lda(dataframe, num_non_dt_cols : int, lda_obj, keep_non_text=True, ):
     
     Returns: 
     new_df / vect_train_df - dataframe with/out non-text columns on the left and document term matrix on the right"""
-    data = dataframe #.copy()
+    data = dataframe
     
     dt_mat = data.iloc[:, num_non_dt_cols:]    
-    lda_df = pd.DataFrame(lda_obj.fit_transform(dt_mat), index=data.index)
+    lda_df = pd.DataFrame(lda_obj.fit_transform(dt_mat), index=data.index, columns=list(range(1,(lda_obj.n_components+1))))
     lda_df = lda_df.add_prefix('topic_')
     
     if keep_non_text:
@@ -118,10 +118,10 @@ def dt_to_lsa(dataframe, num_non_dt_cols : int, lsa_obj, keep_non_text=True, ):
     lsa_df - document-topic table (with the option of having the previous non-doc-term columns appended on the left)
     lsa_obj - the fitted TruncatedSVD (LSA) object
     """
-    data = dataframe #.copy()
+    data = dataframe
     
     dt_mat = data.iloc[:, num_non_dt_cols:]    
-    lsa_df = pd.DataFrame(lsa_obj.fit_transform(dt_mat), index=data.index)
+    lsa_df = pd.DataFrame(lsa_obj.fit_transform(dt_mat), index=data.index, columns=list(range(1,(lsa_obj.n_components+1))))
     lsa_df = lsa_df.add_prefix('latent_concept_')
     
     if keep_non_text:
@@ -142,13 +142,13 @@ def print_topics(model, vectorizer, n_top_words, topics_to_include = None):
     words = vectorizer.get_feature_names()
     if topics_to_include==None:
         for topic_idx, topic in enumerate(model.components_):
-            print("\nTopic #%d:" % topic_idx)
+            print(f"\nTopic #{topic_idx+1}:")
             print("; ".join([words[i]
                             for i in topic.argsort()[:-n_top_words - 1:-1]]))
     else:
         for topic_idx, topic in enumerate(model.components_):
             if topic_idx in topics_to_include:
-                print("\nTopic #%d:" % topic_idx)
+                print(f"\nTopic ##{topic_idx+1}")
                 print("; ".join([words[i]
                                 for i in topic.argsort()[:-n_top_words - 1:-1]]))
     
