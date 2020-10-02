@@ -93,7 +93,9 @@ Notebooks
 4b. Data_preprocessing.ipynb - preprocessing of the text, extraction of salary and review information was done here
 4a_data_extraction_and_cleaning.ipynb - webscraping and html mining was tested and refined iteratively here
 
-functions.py - refactored code lives here, for eda,cleaning, webscraping.
+functions.py - refactored code lives here, for eda,cleaning, webscraping, text preprocessing
+topic_mod.py - functions for transforming data to latent topic data (LDA and LSA) as well as visualising the latter in pyLDAvis
+
 
 Folders
 * clean_data - folder containing clean data and any additional summary data generated
