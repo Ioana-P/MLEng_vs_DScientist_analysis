@@ -41,25 +41,28 @@ c) That our data acquisition process relies on the inner functioning of indeed.c
 ![acronyms in titles_DS_MLEng](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/acronyms_across_ds_and_ml_TITLES.jpeg)
 
 ## Advertising salary:
-From the sample of 2211 jobs we collected, the percentage of job posts where we have been unable to detect salary information is 61.7%
+From the sample of 2211 jobs originally collected, the percentage of job posts where we have been unable to detect salary information is 38.31% (847)
 
-Looking at the breakdown 
-    * The percentage of DS jobs in our sample that openly state any kind of salary range is     37.06
-    * The percentage of ML Eng jobs in our sample that openly state any kind of salary range is 32.21
-    * The percentage of DA jobs in our sample that openly state any kind of salary range is
+If we look at the breakdown of jobs that uniquely appear in only one search (1825 collected job posts)
+
+* The absolute nr of DS jobs in our sample that openly state any kind of salary range is     141
+* The absolute nr of DA jobs in our sample that openly state any kind of salary range is     421
+* The absolute nr of ML Eng jobs in our sample that openly state any kind of salary range is 161
 
 
     
 _____________________________________________________________________________________________________________________________
 
 ### The Data at a Glance (EDA)
+
+As we can see below, Data Scientist and ML Engineering roles tend to pay more than data analyst roles, though there are a few analyst role outliers reaching up to £150k per annum.
 ![hourly_pay](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/salary_per_hour.jpeg)
 
 
 ![yearly_salary](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/yearly_salary_dist.jpeg)
 
 
-Looking at the descriptions bigrams below (where we've included industry stopwords, such as "data", "software"), we can see some signs of divergence in general skills demanded by the job type: ML Eng having a stronger emphasis on 'best practice', 'large scale' and 'end [to] end' work. Both feature AI, although ML Eng slightly more.There are fewer clearer patterns across DS. 
+Looking at the descriptions bigrams below (where I've included industry stopwords, such as "data", "software"), we can see some signs of divergence in general skills demanded by the job type: ML Eng having a stronger emphasis on 'best practice', 'large scale' and 'end [to] end' work. Both feature AI, although ML Eng slightly more.There are fewer clearer patterns across DS. 
 
 
 ![descr bigrams - w/out industry stopwords](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/acronyms_across_ALL_jobs_with_stopws.jpeg)
@@ -68,20 +71,40 @@ Looking at the descriptions bigrams below (where we've included industry stopwor
 
 _____________________________________________________________________________________________________________________________
 
-### Statistical tests comparing salaries between ML Engineers and Data Scientists
+### Statistical tests comparing salaries between ML Engineers, Data Scientists and Data Analysts
 
 
-Limitations of data: small sample size of 421 total (202 for DS; 219 for ML Engineers)
+Limitations of data: 
+- sample size of 421 total (DS: 202; DA: 241; MLEng: 162).
+- all 3 have unequal variances and non-normal distribution (see https://chart-studio.plotly.com/~Ioana-P/4/#/ )
 
-* [WIP]
+Using [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem) to acquire distributions of sample means for all 3 categories, 
+and using [Shapiro-Wilk's Tests](https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test) to check for normality, I data that now meets the 
+requirements for performing [Welch's T-tests](https://en.wikipedia.org/wiki/Welch%27s_t-test). I have performed two tests, comparing 
+Data Scientists vs Data Analysts and Data Scientists vs Machine Learning engineers. 
+
+![DS vs DA](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/hypothesis_test_DS_DA_salary.jpg)
+Salary comparison : data scientists vs data analysts
+Cohen's d = 3.574
+
+
+![DS vs MLEng](https://github.com/Ioana-P/MLEng_vs_DScientist_analysis/blob/master/fig/hypothesis_test_DS_MLEng_salary.jpg)
+Salary comparison : data scientists vs machine learning engineers
+Cohen's d = 0.28
+
+The analysis suggests that, if one is purely aiming to maximise expected salary (all other things held equal / not considered, such as
+skills and preferences for job requirements), you should search indeed.co.uk for "data scientist" and "machine learning engineer" roles. 
+While the differences between MLEng and DS roles are not statistically negligible, the second test's power (0.68) is very low, so there's
+a high change that we may have not detected the "true" effect of searching for MLEng vs DS. 
 
 _____________________________________________________________________________________________________________________________
 
 
-### Insights and possible actions
+### Insights and further research
 [WIP]
-* So far the advice of focusing on SQL is solid advice for either type of job
-* Experience with AWS is helpful with ML Engineering positions, although it's not clear _how_ helpful
+* So far the advice of focusing on SQL is solid advice the DS and DA jobs
+* For higher salary, search nand aim for DS jobs rather than DA roles
+* Experience with AWS is helpful with ML Engineering positions, although it's not clear _how_ helpful (further statistical tests required)
 
 
 ### Filing system:

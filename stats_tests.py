@@ -122,13 +122,19 @@ def p_val(t_stat, df):
     return 1-stats.t.cdf(t_stat,df)
 
 
-def plot_dists(sample_list, label_list, colours_list, figsize = (8,8)):
+def plot_dists(sample_list, label_list, colours_list, figsize = (8,8), x_label='variable', d_arrow=False,):
     plt.figure(figsize=figsize)
-    x = sns.distplot(sample_list[0],color=colours_list[0], bins=10, label=label_list[0])
-    y = sns.distplot(sample_list[1], color=colours_list[1], bins=10, label=label_list[1])
-    lines = plt.vlines([np.mean(sample_list[0]),np.mean(sample_list[1])],ymin=0, ymax=0.00005, label='Mean values')
-    return x,y,lines,plt.legend()
-
+    x = sns.distplot(sample_list[0],color=colours_list[0], bins=10, label=label_list[0],)
+    x.set(xlabel=x_label, ylabel='Density')
+    y = sns.distplot(sample_list[1], color=colours_list[1], bins=10, label=label_list[1],)
+    y.set(xlabel=x_label, ylabel='Density')
+    linesv = plt.vlines([np.mean(sample_list[0]),np.mean(sample_list[1])],ymin=0, ymax=0.00005, label='Mean values')
+    if d_arrow:
+#         plt.figtext(x=(np.mean(sample_list[1])-np.mean(sample_list[0]))/2 ,  y=0.00005, s=f'Cohen\'s d - {coh_d}', fontsize='x-small')
+        arrow = plt.arrow(x=np.mean(sample_list[1]), y=0.000045, dx=-(np.mean(sample_list[1])-np.mean(sample_list[0])), dy=0,width=0.000001, length_includes_head=True, head_length=2000) 
+        return x,y,linesv,arrow,plt.legend()
+    else:
+        return x,y,linesv,plt.legend()
 
 def visualize_one_side_t(t_stat, dof):
     # initialize a matplotlib "figure"
@@ -151,7 +157,8 @@ def hypothesis_test(sample1, sample2,
                         variable,
                         sample1_label, sample2_label,
                         sample1_colour, sample2_colour,
-                        alpha = 0.05, figsize=(8,8)):
+                        alpha = 0.05, figsize=(8,8),
+                       fname='test', x_label='variable'):
     """
     This hypothesis test should take in experimental (sample1) and control samples (sample2) and the variable column
     within those dfs which we wish to compare. Panda Dataframes/Series are expected. 
@@ -176,11 +183,7 @@ def hypothesis_test(sample1, sample2,
     
     test_samples = [sample1, sample2]
     test_samples_labels = [sample1_label, sample2_label]
-    test_samples_colours = [sample1_colour, sample2_colour]
-    
-    
-    plot_dists(test_samples, test_samples_labels, test_samples_colours, figsize)
-    
+    test_samples_colours = [sample1_colour, sample2_colour]    
     
     t_statistic = welch_t(sample1, sample2)
     
@@ -196,15 +199,19 @@ def hypothesis_test(sample1, sample2,
     # starter code for return statement and printed results
     status = compare_pval_alpha(p_value, alpha)
     assertion = ''
+    d_arrow=False
     if status == 'Fail to reject':
         assertion = 'cannot'
     else:
         assertion = "can"
+        d_arrow=True
         coh_d = Cohen_d(expr_sample=sample1, ctrl_sample=sample2)
         power = power_analysis.solve_power(effect_size=coh_d, nobs1=len(sample1), alpha=alpha)
+        if power == 1.0:
+            power='>0.99'
 
     
-    
+    plot_dists(test_samples, test_samples_labels, test_samples_colours, figsize, x_label, d_arrow, )
     
     # Here we generate our final statement on whether our null hypothesis can be rejected or not and what 
     # our effect size is, if the H0 is rejected.
@@ -217,6 +224,6 @@ def hypothesis_test(sample1, sample2,
     else:
         print(".")
     
-    plt.savefig(f'fig/hypothesis_test_1_{variable}.jpg')
+    plt.savefig(f'fig/hypothesis_test_{fname}_{variable}.jpg')
     print("Returned the following items (in order): status, assertion, cohen's d, t-statistic, degress of freedom")
     return (status, assertion, coh_d, t_statistic, dof)
