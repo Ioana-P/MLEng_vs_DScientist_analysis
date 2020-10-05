@@ -133,3 +133,6 @@ dmypy.json
 *.csv
 *.pickle
 *.tsv
+
+# Files to avoid
+key.py
