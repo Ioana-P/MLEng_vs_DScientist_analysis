@@ -79,7 +79,7 @@ Limitations of data:
 - all 3 have unequal variances and non-normal distribution (see https://chart-studio.plotly.com/~Ioana-P/4/#/ )
 
 Using [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem) to acquire distributions of sample means for all 3 categories, 
-and using [Shapiro-Wilk's Tests](https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test) to check for normality, I data that now meets the 
+and using [Shapiro-Wilk's Tests](https://en.wikipedia.org/wiki/Shapiro%E2%80%93Wilk_test) to check for normality, the data now meets the 
 requirements for performing [Welch's T-tests](https://en.wikipedia.org/wiki/Welch%27s_t-test). I have performed two tests, comparing 
 Data Scientists vs Data Analysts and Data Scientists vs Machine Learning engineers. 
 
