@@ -34,6 +34,13 @@
 
 import PySimpleGUI as sg 
 import os.path
+import pandas as pd 
+import sqlalchemy as db
+import seaborn as sns
+import matplotlib.pyplot as plt
+engine = db.create_engine('sqlite:///preprocessing_nb/scraped_jobs.sqlite')
+connection = engine.connect()
+
 
 
 intro_layout = [[sg.Text("Welcome to the Indeed Job Post Scraper"), sg.Text(size=(40,1))],
@@ -81,6 +88,10 @@ while True:
         current_window.close()
         print(values['-JOB-TITLE-'])
         print(values['-SALARY-'])
+        table = pd.read_sql_query('SELECT Salary FROM salaries WHERE Salary IS NOT NULL', connection)
+        # print(table)
+        sns.distplot(table.values, bins=10, kde=False)
+        plt.show()
         break
 
 current_window.close()
