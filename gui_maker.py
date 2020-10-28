@@ -1,21 +1,19 @@
-# import pandas as pd
-# import numpy as np
-# import os
-# import time
+import numpy as np
+import time
 # import requests as req
 # from dotenv import load_dotenv
 # load_dotenv()
-# import selenium as sl
-# from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException
-# from selenium import webdriver
-# from bs4 import BeautifulSoup
-# from selenium.webdriver.common.keys import Keys
-# from selenium.webdriver.common.by import By
-# from selenium import webdriver 
-# from selenium.webdriver.chrome.options import Options
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as ec
-# from selenium.webdriver.common.action_chains import ActionChains
+import selenium as sl
+from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException
+from selenium import webdriver
+from bs4 import BeautifulSoup
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium import webdriver 
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.common.action_chains import ActionChains
 
 # import matplotlib.pyplot as plt
 # import seaborn as sns
@@ -29,7 +27,7 @@
 # stop_words = list(set(stopwords.words("english")))
 # stop_words += list(string.punctuation)
 
-# from functions import JobPostScraper
+from functions import JobPostScraper
 
 
 import PySimpleGUI as sg 
@@ -50,13 +48,20 @@ intro_layout = [[sg.Text("Welcome to the Indeed Job Post Scraper"), sg.Text(size
                  [sg.Button("Close")]
                  ]
 
-intro_window = sg.Window("IndeedScraper", intro_layout)
-
+scrape_layout = [[sg.Text("Scrape job data", (20,3)), sg.Text(size=(40,1))],
+                [sg.Text("Search term", (20,1)), sg.In(size=(30,1), enable_events=True, key='-SEARCH-TERM-')],
+                [sg.Text("Location", (20,1)), sg.In('London', size=(30,1), enable_events=True, key='-SEARCH-LOCATION-')],
+                [sg.Text("Website URL", (20,1)), sg.In('https://www.indeed.co.uk', (30,1), enable_events=True, key='-ROOT-URL-')],                # [sg.Button("Go back"), sg.Text(size=(10,1), enable_events=True, key="-GO-BACK-")],
+                [sg.Text("How many jobs?", (20,1)), sg.In('10', (5,1), enable_events=True, key='-NUM-JOBS-')],
+                [sg.Text("Save as (filename)", (20,1)), sg.In('scraped_jobs_data', (30,1), enable_events=True, key='-FILENAME-')],
+                [sg.Button("SCRAPE")],
+                [sg.Button("Close")]
+                ]
 
 retrieve_layout = [[sg.Text("Retrieve job data"), sg.Text(size=(40,1))],
                 # [sg.Text("Get data from jobs that have previously been scraped and stored"), sg.Text(10,2)],
-                [sg.Text("Job title"), sg.In(size=(15,1), enable_events=True, key='-JOB-TITLE-')],
-                [sg.Text("Organisation name"), sg.In(size=(15,1), enable_events=True, key='-ORG-NAME-')],
+                [sg.Text("Job title", (20,1)), sg.In(size=(15,1), enable_events=True, key='-JOB-TITLE-')],
+                [sg.Text("Organisation name", (20,1)), sg.In(size=(15,1), enable_events=True, key='-ORG-NAME-')],
                 [
                 sg.Frame('Categories', layout=[ 
                         [sg.Text('What to select: ')],
@@ -82,6 +87,9 @@ time_period_layout = [[sg.Text("What declared time period for salary data do you
                     [sg.Button("Go retrieve!"), sg.Text(size=(20,1), enable_events=True, key="-GO-RETRIEVE-")]
                      ]
 
+
+intro_window = sg.Window("IndeedScraper", intro_layout)
+scrape_window = sg.Window("Scrape indeed", scrape_layout)
 retrieve_window = sg.Window("Retrieve", retrieve_layout)
 time_period_window = sg.Window("Time Period", time_period_layout)
 
@@ -93,8 +101,14 @@ search_dict = {'search_Job_title': '',
                 'salary_period':'Y',
                 'get_Job_description': False,
                 'get_Job_salary': True}
+scrape_dict = {'search_term':'',
+                'location':'London',
+                'root_url':'https://www.indeed.co.uk',
+                'num_jobs':10,
+                'file_name':'scraped_jobs_data'}
 
 current_window = intro_window
+
 while True:
     event, values = current_window.read()
     #end program if user closes window or
@@ -102,10 +116,31 @@ while True:
     if event == "Close" or event == sg.WIN_CLOSED:
         break
     elif event =="Scrape":
+        current_window.close()
+        current_window = scrape_window
+    elif event =='SCRAPE':
         print("Still in build")
+        #assigning values into the scrape dict with the inputs
+        scrape_dict['root_url']= values['-ROOT-URL-']
+        scrape_dict['search_term']= values['-SEARCH-TERM-']
+        scrape_dict['location']= values['-SEARCH-LOCATION-']
+        scrape_dict['num_jobs']= int(values['-NUM-JOBS-'])
+        #calling webscraper from functions.py
+        job_scraper = JobPostScraper(scrape_dict['root_url'], 
+                                    scrape_dict['search_term'],
+                                    scrape_dict['location'], 
+                                    scrape_dict['num_jobs'])
+
+        job_url_df = job_scraper.get_job_link_urls()
+        job_scraper.get_job_text_html(job_url_df, headless=False)
+        new_jobs_df = job_scraper.get_jobs_df()
+        current_time = time.asctime().replace(' ', '_')
+        filename = scrape_dict['file_name']+current_time
+        new_jobs_df.to_csv(f'{filename}.csv', columns = new_jobs_df.columns)
+        print("Scraping job done!")
         break
     elif event =="Retrieve":
-        print("Still in build")
+        print("Getting stored data")
         engine = db.create_engine('sqlite:///preprocessing_nb/scraped_jobs.sqlite')
         connection = engine.connect()
         current_window.close()

@@ -60,6 +60,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.action_chains import ActionChains
+import time
 
 
 
@@ -187,6 +188,8 @@ class JobPostScraper:
             list_hrefs = [jobtitle_elem['href'] for jobtitle_elem in jobtitle_soup]
             for href in list_hrefs:
                 sub_urls.append(href)
+                if len(sub_urls)>= self.num_jobs:
+                    break
                 
             
             # driver waits for the next page button to be viewable before moving and clicking
