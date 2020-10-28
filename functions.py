@@ -453,6 +453,21 @@ def get_num_reviews(text, regex_pattern = '[0-9]*[,]*[0-9]* review[s]*'):
 def remove_reviews(text, regex_pattern = '[0-9]*[,]*[0-9]* review[s]*'):
     return re.sub(regex_pattern, '', text)
 
+def full_clean_and_store(file_path, new_file_name):
+    df = pd.read_csv(file_path, index_col=0)
+    df['job_descr'].drop_duplicates(inplace=True)
+    df['job_descr'] = df['job_descr'].apply(preprocess_data) #removing emails, websites, identifiers
+    df['salary_data'] = df['job_post_html'].apply(get_salary) #retrieve and store salary dataa from html dom
+    df['salary_from_page_source_as_stated'] = [round(x[0],2) for x in df['salary_data'].values]
+    df['salary_from_page_source_conv_hourly'] = [round(x[1],2) for x in df['salary_data'].values]
+    df['salary_from_page_source_time_period'] = [x[2] for x in df['salary_data'].values]
+    df.drop(columns=['salary_data'], inplace=True)
+    df['Num_reviews'] = df.company.apply(get_num_reviews)
+    df.company = df.company.apply(remove_reviews)
+    df.drop(columns=['job_post_html'], axis=1, inplace=True)
+    df.to_csv(+new_file_name+'_CLEAN')
+    return
+
 
 
 #################################EDA#####################################

@@ -18,17 +18,17 @@ from selenium.webdriver.common.action_chains import ActionChains
 # import matplotlib.pyplot as plt
 # import seaborn as sns
 # sns.set_style("darkgrid")
-# import string
+import string
 
-# from nltk.corpus import stopwords
+from nltk.corpus import stopwords
 # from nltk.tokenize import RegexpTokenizer
 # import re
 # tokenizer = RegexpTokenizer(r'\b\w{3,}\b')
-# stop_words = list(set(stopwords.words("english")))
-# stop_words += list(string.punctuation)
+stop_words = list(set(stopwords.words("english")))
+stop_words += list(string.punctuation)
 
 from functions import JobPostScraper
-
+import functions as fn
 
 import PySimpleGUI as sg 
 import os.path
@@ -38,16 +38,19 @@ import sqlalchemy as db
 # import matplotlib.pyplot as plt
 
 
-
-
+# First defining all the window layouts for pysimplegui to open up 
+# their format is that of lists of lists
+# first window with all options
 intro_layout = [[sg.Text("Welcome to the Indeed Job Post Scraper"), sg.Text(size=(40,1))],
                  [sg.Button("Scrape"), sg.Text(size=(15, 1), enable_events=True, key="-SCRAPE-"),
                  ], 
                  [sg.Button("Retrieve"), sg.Text(size=(15,1), enable_events=True, key="-RETRIEVE-")
                  ],
+                 [sg.Button("Clean"), sg.Text(size=(15,1), enable_events=True, key='-CLEAN-')
+                 ],
                  [sg.Button("Close")]
                  ]
-
+# window for scraping menu, allowing you to enter the webscraping details- e.g. what job you'd like to search for
 scrape_layout = [[sg.Text("Scrape job data", (20,3)), sg.Text(size=(40,1))],
                 [sg.Text("Search term", (20,1)), sg.In(size=(30,1), enable_events=True, key='-SEARCH-TERM-')],
                 [sg.Text("Location", (20,1)), sg.In('London', size=(30,1), enable_events=True, key='-SEARCH-LOCATION-')],
@@ -57,7 +60,7 @@ scrape_layout = [[sg.Text("Scrape job data", (20,3)), sg.Text(size=(40,1))],
                 [sg.Button("SCRAPE")],
                 [sg.Button("Close")]
                 ]
-
+#window for retrieval menu: if you're looking to access the associated database
 retrieve_layout = [[sg.Text("Retrieve job data"), sg.Text(size=(40,1))],
                 # [sg.Text("Get data from jobs that have previously been scraped and stored"), sg.Text(10,2)],
                 [sg.Text("Job title", (20,1)), sg.In(size=(15,1), enable_events=True, key='-JOB-TITLE-')],
@@ -77,7 +80,7 @@ retrieve_layout = [[sg.Text("Retrieve job data"), sg.Text(size=(40,1))],
                 # [sg.Button("Go back"), sg.Text(size=(10,1), enable_events=True, key="-GO-BACK-")],
                 [sg.Button("Close")]
                 ]
-
+#extra menu that pops up after the retrieval window, offering further options
 time_period_layout = [[sg.Text("What declared time period for salary data do you wish to access?"), sg.Text(size=(30,1))],
                      [sg.Frame('Time period', layout=[
                          [sg.Radio('Annual', 1, default=True, key='-YEARLY-')],
@@ -87,11 +90,12 @@ time_period_layout = [[sg.Text("What declared time period for salary data do you
                     [sg.Button("Go retrieve!"), sg.Text(size=(20,1), enable_events=True, key="-GO-RETRIEVE-")]
                      ]
 
-
+clean_layout = [[sg.Text('Clean and preprocess data', (20,3)), sg.Text(size=(40,1)) ],
+                [sg.Text('CSV file path', (20,10)), sg.In(size=(30,1), enable_events=True, key='-RAW-DATA-LOC-')],
+                [sg.Text('New file name', (20,1)), sg.In(size=(30,1), enable_events=True, key='-NEW-FILENAME-')],
+                [sg.Button('CLEAN')]]
+#instantiating the intro window
 intro_window = sg.Window("IndeedScraper", intro_layout)
-scrape_window = sg.Window("Scrape indeed", scrape_layout)
-retrieve_window = sg.Window("Retrieve", retrieve_layout)
-time_period_window = sg.Window("Time Period", time_period_layout)
 
 search_dict = {'search_Job_title': '',
                 'search_Org_name': '',
@@ -106,6 +110,7 @@ scrape_dict = {'search_term':'',
                 'root_url':'https://www.indeed.co.uk',
                 'num_jobs':10,
                 'file_name':'scraped_jobs_data'}
+clean_dict = {'filepath':'scrapy_data.csv', 'new_file_name':'cleany_data.csv'}
 
 current_window = intro_window
 
@@ -117,9 +122,9 @@ while True:
         break
     elif event =="Scrape":
         current_window.close()
+        scrape_window = sg.Window("Scrape indeed", scrape_layout)
         current_window = scrape_window
     elif event =='SCRAPE':
-        print("Still in build")
         #assigning values into the scrape dict with the inputs
         scrape_dict['root_url']= values['-ROOT-URL-']
         scrape_dict['search_term']= values['-SEARCH-TERM-']
@@ -138,12 +143,31 @@ while True:
         filename = scrape_dict['file_name']+current_time
         new_jobs_df.to_csv(f'{filename}.csv', columns = new_jobs_df.columns)
         print("Scraping job done!")
+        print("Example rows of your newly scraped data:")
+        print(new_jobs_df.head())
+        print(f"Total number of sites collected: {len(new_jobs_df)}")
         break
+        # current_window.close()
+        # event = 'Clean'
+    elif event == 'Clean':
+        current_window.close()
+        clean_window = sg.Window("Clean and preprocess data", clean_layout)
+        current_window = clean_window 
+    elif event == 'CLEAN':
+        clean_dict['filepath'] = values['-RAW-DATA-LOC-']
+        clean_dict['new_file_name'] = values['-NEW-FILENAME-']
+
+        clean_data = fn.full_clean_and_store(clean_dict['filepath'], clean_dict['new_file_name'])
+        print(f"Clean, processed data stored as ", clean_dict['new_file_name'])
+        print("Thank you for using Scrape Indeed")
+        break
+
     elif event =="Retrieve":
         print("Getting stored data")
         engine = db.create_engine('sqlite:///preprocessing_nb/scraped_jobs.sqlite')
         connection = engine.connect()
         current_window.close()
+        retrieve_window = sg.Window("Retrieve", retrieve_layout)
         current_window = retrieve_window
     elif event=='Specify salary time period':
         search_dict['search_Job_title'] = values['-JOB-TITLE-']
@@ -154,6 +178,7 @@ while True:
         search_dict['search_DA'] = values['-Searched-DA-']
         search_dict['search_ME'] = values['-Searched-ME-']
         current_window.close()
+        time_period_window = sg.Window("Time Period", time_period_layout)
         current_window = time_period_window
     elif event =="Go retrieve!":
         if values['-YEARLY-']==True:
