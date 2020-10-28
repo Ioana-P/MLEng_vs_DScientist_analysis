@@ -61,27 +61,29 @@ retrieve_layout = [[sg.Text("Retrieve job data"), sg.Text(size=(40,1))],
                 sg.Frame('Categories', layout=[ 
                         [sg.Text('What to select: ')],
                         [sg.Checkbox('Job description', default=False,key='-DESCR-')],
-                        [sg.Checkbox('Salary', default=True,key='-SALARY-')],
-                        [sg.Checkbox('Data Scientist', default=False, key='-Searched-DS-')],
-                        [sg.Checkbox('Data Analyst', default=False, key='-Searched-DA-')],
-                        [sg.Checkbox('ML Engineer', default=False, key='-Searched-ME-')]
+                        [sg.Checkbox('Salary',default=True,key='-SALARY-')],
+                        [sg.Radio('Data Scientist',0, default=False, key='-Searched-DS-')],
+                        [sg.Radio('Data Analyst', 0,default=False, key='-Searched-DA-')],
+                        [sg.Radio('ML Engineer', 0,default=False, key='-Searched-ME-')]
                 ]
                 )
                 ],
-                [sg.Button("Go!"), sg.Text(size=(20,1), enable_events=True, key="-GO-RETRIEVE-")],
-                [sg.Button("Go back"), sg.Text(size=(10,1), enable_events=True, key="-GO-BACK-")],
+                [sg.Button("Specify salary time period"), sg.Text(size=(20,1), enable_events=True, key="-GO-RETRIEVE-")],
+                # [sg.Button("Go back"), sg.Text(size=(10,1), enable_events=True, key="-GO-BACK-")],
                 [sg.Button("Close")]
                 ]
 
-# time_period_layout = [[sg.Text("What declared time period for salary data do you wish to access?"), sg.Text(size=(30,1))],
-#                      [sg.Frame(layout=[
-#                          sg.Checkbox('Annual', default=True, key='-YEARLY-'),
-#                          sg.Checkbox('Monthly', default=False, key='-MONTHLY-'),
-#                          sg.Checkbox('Daily', default=False, key='-DAILY-')]],
-#                     [sg.Button("Go!"), sg.Text(size=(20,1), enable_events=True, key="-GO-RETRIEVE-")]
-#                      ])]]
+time_period_layout = [[sg.Text("What declared time period for salary data do you wish to access?"), sg.Text(size=(30,1))],
+                     [sg.Frame('Time period', layout=[
+                         [sg.Radio('Annual', 1, default=True, key='-YEARLY-')],
+                         [sg.Radio('Monthly', 1, default=False, key='-MONTHLY-')],
+                         [sg.Radio('Daily', 1, default=False, key='-DAILY-')]
+                         ])],
+                    [sg.Button("Go retrieve!"), sg.Text(size=(20,1), enable_events=True, key="-GO-RETRIEVE-")]
+                     ]
 
 retrieve_window = sg.Window("Retrieve", retrieve_layout)
+time_period_window = sg.Window("Time Period", time_period_layout)
 
 search_dict = {'search_Job_title': '',
                 'search_Org_name': '',
@@ -108,7 +110,7 @@ while True:
         connection = engine.connect()
         current_window.close()
         current_window = retrieve_window
-    elif event =="Go!":
+    elif event=='Specify salary time period':
         search_dict['search_Job_title'] = values['-JOB-TITLE-']
         search_dict['search_Org_name'] = values['-ORG-NAME-']
         search_dict['get_Job_salary'] = values['-SALARY-']
@@ -116,14 +118,25 @@ while True:
         search_dict['search_DS'] = values['-Searched-DS-']
         search_dict['search_DA'] = values['-Searched-DA-']
         search_dict['search_ME'] = values['-Searched-ME-']
+        current_window.close()
+        current_window = time_period_window
+    elif event =="Go retrieve!":
+        if values['-YEARLY-']==True:
+            search_dict['salary_period'] = 'Y'
+        elif values['-MONTHLY-']==True:
+            search_dict['salary_period'] = 'M'
+        elif values['-DAILY-']==True:
+            search_dict['salary_period'] = 'D'    
 
         table = pd.read_sql_query(f"""
                             SELECT s.Job_Id, Job_Name, Org_Name, Salary
-                            FROM salaries s JOIN job_search j ON s.Job_Id == j.Job_Id
+                            FROM salaries s JOIN job_search j ON s.Job_Id == j.Job_Id 
+                            JOIN salary_period p on s.Job_Id == p.Job_Id
                             WHERE (Salary IS NOT NULL AND 
                                    j.Searched_data_scientist == {search_dict['search_DS']} AND
                                    j.Searched_data_analyst == {search_dict['search_DA']} AND
-                                   j.Searched_machine_learning_engineer == {search_dict['search_ME']})
+                                   j.Searched_machine_learning_engineer == {search_dict['search_ME']} AND
+                                   p.Salary_Time_Period == '{search_dict['salary_period']}') 
                             LIMIT 10
                              """, connection)
         if search_dict['search_Job_title'] != '':
@@ -135,15 +148,13 @@ while True:
         if search_dict['search_Org_name'] != '':
             org_search = search_dict['search_Org_name']
             cur_table = cur_table.loc[table.Org_Name.str.contains(f'(?<![\w\d]){org_search}(?![\w\d])')]
-        else:
-            cur_table = cur_table
+        
         pd.set_option('display.expand_frame_repr', False)
         print(cur_table)
         # sns.distplot(cur_table.Salary.values, bins=10, kde=False)
         # plt.show()
-    elif event=="Go back":
-        current_window.close()
-        current_window = intro_window
+    # elif event=="Go back":
+    #     current_window = intro_window
         
 
 current_window.close()
