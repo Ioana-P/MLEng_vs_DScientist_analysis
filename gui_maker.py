@@ -2,36 +2,9 @@ print("LOADING GUI --- PLEASE WAIT \n ------------------------------------------
 
 import numpy as np
 import time
-# import requests as req
-# from dotenv import load_dotenv
-# load_dotenv()
-import selenium as sl
-from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException
-from selenium import webdriver
-from bs4 import BeautifulSoup
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium import webdriver 
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
-from selenium.webdriver.common.action_chains import ActionChains
-
-# import matplotlib.pyplot as plt
-# import seaborn as sns
-# sns.set_style("darkgrid")
 import string
-
-from nltk.corpus import stopwords
-# from nltk.tokenize import RegexpTokenizer
-# import re
-# tokenizer = RegexpTokenizer(r'\b\w{3,}\b')
-stop_words = list(set(stopwords.words("english")))
-stop_words += list(string.punctuation)
-
 from functions import JobPostScraper
 import functions as fn
-
 import PySimpleGUI as sg 
 import os.path
 import pandas as pd 
@@ -132,6 +105,7 @@ while True:
         scrape_dict['search_term']= values['-SEARCH-TERM-']
         scrape_dict['location']= values['-SEARCH-LOCATION-']
         scrape_dict['num_jobs']= int(values['-NUM-JOBS-'])
+        scrape_dict['file_name'] = values['-NEW-FILENAME-']
         #calling webscraper from functions.py
         job_scraper = JobPostScraper(scrape_dict['root_url'], 
                                     scrape_dict['search_term'],
@@ -139,7 +113,7 @@ while True:
                                     scrape_dict['num_jobs'])
 
         job_url_df = job_scraper.get_job_link_urls()
-        job_scraper.get_job_text_html(job_url_df, headless=False)
+        job_scraper.get_job_text_html(job_url_df, headless=True)
         new_jobs_df = job_scraper.get_jobs_df()
         current_time = time.asctime().replace(' ', '_')
         filename = scrape_dict['file_name']+current_time

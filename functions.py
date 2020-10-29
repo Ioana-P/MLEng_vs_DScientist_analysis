@@ -168,7 +168,7 @@ class JobPostScraper:
         
         time_index = 0
         
-        while len(sub_urls)<=self.num_jobs:
+        while len(sub_urls)<self.num_jobs:
             try:
                 time.sleep(3)
                 pop_up_close = driver.find_element_by_class_name('popover-x')
@@ -190,10 +190,17 @@ class JobPostScraper:
             list_hrefs = [jobtitle_elem['href'] for jobtitle_elem in jobtitle_soup]
             for href in list_hrefs:
                 sub_urls.append(href)
+                sub_urls = list(dict.fromkeys(sub_urls))
                 if len(sub_urls)>= self.num_jobs:
                     break
-                
-            
+
+            #the following try deals with the cookies popup    
+            try:
+                cookie_popup_elem=WebDriverWait(driver, 2).until(ec.presence_of_element_located((By.ID, 'onetrust-accept-btn-handler')))
+                ActionChains(driver).move_to_element(cookie_popup_elem).click().perform()
+            except:
+                pass
+
             # driver waits for the next page button to be viewable before moving and clicking
             WebDriverWait(driver, 2).until(ec.element_to_be_clickable((By.CLASS_NAME, 'np')))
             next_page_buttons = driver.find_elements_by_class_name('np')
@@ -210,12 +217,14 @@ class JobPostScraper:
             
             #printout
             time_elapsed = time.time() - start
+            
             printout = f'Step {time_index} --- Time elapsed so far {time_elapsed}; URLs stored : {len(sub_urls)}'
             print(printout)
             time_index+=1
             
         # Now we take our list of urls, preppend the root url to them and store them in a dataframe
         job_urls_full = list(map(lambda x: str(self.root_url)+x , sub_urls))
+        # job_urls_full = list(dict.fromkeys(job_urls_full))
         job_url_df = pd.DataFrame(job_urls_full, columns=['job_url'])
         
         self.job_post_urls_ = job_urls_full
