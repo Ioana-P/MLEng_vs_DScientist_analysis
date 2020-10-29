@@ -1,3 +1,5 @@
+print("LOADING GUI --- PLEASE WAIT \n ------------------------------------------------------------------------")
+
 import numpy as np
 import time
 # import requests as req
@@ -148,7 +150,7 @@ while True:
         print(f"Total number of sites collected: {len(new_jobs_df)}")
         break
         # current_window.close()
-        # event = 'Clean'
+        # event = 'Clean' 
     elif event == 'Clean':
         current_window.close()
         clean_window = sg.Window("Clean and preprocess data", clean_layout)

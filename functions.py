@@ -114,6 +114,8 @@ class JobPostScraper:
         self.companies_lst_ = []
         self.job_post_dom_ = []
         self.job_post_urls_ = []
+        self.scrape_asctimes = []
+        
         return
     
 
@@ -282,7 +284,7 @@ class JobPostScraper:
                 pass
             
             self.job_post_dom_.append(job_soup)
-
+            self.scrape_asctimes.append(time.asctime())
             
             if (len(self.job_descr_lst_)%50 ==0):
                 time_elapsed_get_jobs = time.time() - start_job_descr
@@ -302,7 +304,8 @@ class JobPostScraper:
                             'company': self.companies_lst_,
                             'job_title' : self.job_titles_lst_,
                             'job_descr' : self.job_descr_lst_,
-                            'job_post_html' : self.job_post_dom_})
+                            'job_post_html' : self.job_post_dom_,
+                            'time_of_scrape' : self.scrape_asctimes})
         
         data['job_search_term'] = str(self.search_term_job)
         data['job_location'] = str(self.location)
@@ -465,7 +468,7 @@ def full_clean_and_store(file_path, new_file_name):
     df['Num_reviews'] = df.company.apply(get_num_reviews)
     df.company = df.company.apply(remove_reviews)
     df.drop(columns=['job_post_html'], axis=1, inplace=True)
-    df.to_csv(+new_file_name+'_CLEAN')
+    df.to_csv(new_file_name+'_CLEAN.csv')
     return
 
 
