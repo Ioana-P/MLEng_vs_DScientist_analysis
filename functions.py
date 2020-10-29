@@ -60,6 +60,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.action_chains import ActionChains
+import time
 
 
 
@@ -113,6 +114,8 @@ class JobPostScraper:
         self.companies_lst_ = []
         self.job_post_dom_ = []
         self.job_post_urls_ = []
+        self.scrape_asctimes = []
+        
         return
     
 
@@ -165,7 +168,7 @@ class JobPostScraper:
         
         time_index = 0
         
-        while len(sub_urls)<=self.num_jobs:
+        while len(sub_urls)<self.num_jobs:
             try:
                 time.sleep(3)
                 pop_up_close = driver.find_element_by_class_name('popover-x')
@@ -187,8 +190,17 @@ class JobPostScraper:
             list_hrefs = [jobtitle_elem['href'] for jobtitle_elem in jobtitle_soup]
             for href in list_hrefs:
                 sub_urls.append(href)
-                
-            
+                sub_urls = list(dict.fromkeys(sub_urls))
+                if len(sub_urls)>= self.num_jobs:
+                    break
+
+            #the following try deals with the cookies popup    
+            try:
+                cookie_popup_elem=WebDriverWait(driver, 2).until(ec.presence_of_element_located((By.ID, 'onetrust-accept-btn-handler')))
+                ActionChains(driver).move_to_element(cookie_popup_elem).click().perform()
+            except:
+                pass
+
             # driver waits for the next page button to be viewable before moving and clicking
             WebDriverWait(driver, 2).until(ec.element_to_be_clickable((By.CLASS_NAME, 'np')))
             next_page_buttons = driver.find_elements_by_class_name('np')
@@ -205,12 +217,14 @@ class JobPostScraper:
             
             #printout
             time_elapsed = time.time() - start
+            
             printout = f'Step {time_index} --- Time elapsed so far {time_elapsed}; URLs stored : {len(sub_urls)}'
             print(printout)
             time_index+=1
             
         # Now we take our list of urls, preppend the root url to them and store them in a dataframe
         job_urls_full = list(map(lambda x: str(self.root_url)+x , sub_urls))
+        # job_urls_full = list(dict.fromkeys(job_urls_full))
         job_url_df = pd.DataFrame(job_urls_full, columns=['job_url'])
         
         self.job_post_urls_ = job_urls_full
@@ -279,7 +293,7 @@ class JobPostScraper:
                 pass
             
             self.job_post_dom_.append(job_soup)
-
+            self.scrape_asctimes.append(time.asctime())
             
             if (len(self.job_descr_lst_)%50 ==0):
                 time_elapsed_get_jobs = time.time() - start_job_descr
@@ -299,7 +313,8 @@ class JobPostScraper:
                             'company': self.companies_lst_,
                             'job_title' : self.job_titles_lst_,
                             'job_descr' : self.job_descr_lst_,
-                            'job_post_html' : self.job_post_dom_})
+                            'job_post_html' : self.job_post_dom_,
+                            'time_of_scrape' : self.scrape_asctimes})
         
         data['job_search_term'] = str(self.search_term_job)
         data['job_location'] = str(self.location)
@@ -449,6 +464,21 @@ def get_num_reviews(text, regex_pattern = '[0-9]*[,]*[0-9]* review[s]*'):
 
 def remove_reviews(text, regex_pattern = '[0-9]*[,]*[0-9]* review[s]*'):
     return re.sub(regex_pattern, '', text)
+
+def full_clean_and_store(file_path, new_file_name):
+    df = pd.read_csv(file_path, index_col=0)
+    df['job_descr'].drop_duplicates(inplace=True)
+    df['job_descr'] = df['job_descr'].apply(preprocess_data) #removing emails, websites, identifiers
+    df['salary_data'] = df['job_post_html'].apply(get_salary) #retrieve and store salary dataa from html dom
+    df['salary_from_page_source_as_stated'] = [round(x[0],2) for x in df['salary_data'].values]
+    df['salary_from_page_source_conv_hourly'] = [round(x[1],2) for x in df['salary_data'].values]
+    df['salary_from_page_source_time_period'] = [x[2] for x in df['salary_data'].values]
+    df.drop(columns=['salary_data'], inplace=True)
+    df['Num_reviews'] = df.company.apply(get_num_reviews)
+    df.company = df.company.apply(remove_reviews)
+    df.drop(columns=['job_post_html'], axis=1, inplace=True)
+    df.to_csv(new_file_name+'_CLEAN.csv')
+    return
 
 
 
