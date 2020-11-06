@@ -25,8 +25,8 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.stem import WordNetLemmatizer, PorterStemmer
 import re
 tokenizer = RegexpTokenizer(r'\b\w{3,}\b')
-stop_words = list(set(stopwords.words("english")))
-stop_words += list(string.punctuation)
+gen_stop_words = list(set(stopwords.words("english")))
+gen_stop_words += list(string.punctuation)
 import bs4
 from bs4 import BeautifulSoup
 from nltk.util import ngrams
@@ -47,8 +47,14 @@ class LemmaTokenizer(object):
         self.tokenizer = tokenizer
         self.stopwords = stopwords
     def __call__(self, articles):
+        return [self.wnl.lemmatize(token, ) for token in self.tokenizer.tokenize(articles) if token not in self.stopwords]
+    
+    def tokenize(self, articles):
         return [self.wnl.lemmatize(token) for token in self.tokenizer.tokenize(articles) if token not in self.stopwords]
-
+    
+    
+    
+    
 import selenium as sl
 from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException
 from selenium import webdriver
@@ -80,13 +86,16 @@ def preprocess_data(string):
         new_str_cont += tok + ' '
     return new_str_cont
 
-def gen_stopwords(additional_sw = ['data', 'experience', 'learning', 'science', 'machine', 'work', 'company', 'role', 'the', 'skills', ' data', '000', "data", "the", 'join', 'you']):
+def gen_stopwords(additional_sw = ['data', 'experience', 'learning', 
+                                'science', 'machine', 'work', 'company', 
+                                'role', 'the', 'skills', ' data', '000', 
+                                "data", "the", 'join', 'you'], general_sw = gen_stop_words):
     """Function that calls upon nltk's built-in list of stop words and appends the word included in the param additional_sw.
     Param:
     additional_sw - (list) expects a list of string which will be added to the stopwords
     Returns:
     new_stop_words - (list) stopwords to be used"""
-    new_stop_words = stop_words
+    new_stop_words = general_sw
     for sw in additional_sw:
         new_stop_words.append(sw)
     new_stop_words = list(set(new_stop_words))
@@ -139,192 +148,8 @@ class JobPostScraper:
         # accessing main page
         driver.get(self.root_url)
         time.sleep(2)
-        
-        
-#         DEBUGG: website introduced a new popup re consent to data collection practices, that is 
-#         messing up the scraping. For now will click on manually. Will return to this at some point
-#         try:
-#             time.sleep(3)
-#             pop_up_close = driver.find_element_by_class_name('icl_LegalConsentBanner-action')
-#             pop_up_close.click()
-#         except:
-#             print("CANT FIND BUTTON")
-        
-        #enter our job search terms
-        elem = driver.find_element_by_name('q')
-        elem.clear()
-        elem.send_keys(self.search_term_job)
-
-        time.sleep(2)
-        #enter our location search term
-        elem = driver.find_element_by_name('l')
-        elem.clear()
-        elem.send_keys(self.location)
-        elem.click()
-        time.sleep(1)
-        elem.send_keys(Keys.RETURN)
-
-        time.sleep(4)
-        
-        time_index = 0
-        
-        while len(sub_urls)<self.num_jobs:
-            try:
-                time.sleep(3)
-                pop_up_close = driver.find_element_by_class_name('popover-x')
-                pop_up_close.click()
-            except:
-                pass
-            
-            
-
-            # using BS4 on the page source to get all the urls
-            DOM = driver.page_source
-            soup = BeautifulSoup(DOM, 'lxml')
-            
-            jobtitle_soup = soup.find_all(name='a', 
-                                               attrs= {'class': 'jobtitle turnstileLink', 
-                                                       'data-tn-element':'jobTitle'})
-            
-            # getting href attributes and storing them
-            list_hrefs = [jobtitle_elem['href'] for jobtitle_elem in jobtitle_soup]
-            for href in list_hrefs:
-                sub_urls.append(href)
-                sub_urls = list(dict.fromkeys(sub_urls))
-                if len(sub_urls)>= self.num_jobs:
-                    break
-
-            #the following try deals with the cookies popup    
-            try:
-                cookie_popup_elem=WebDriverWait(driver, 2).until(ec.presence_of_element_located((By.ID, 'onetrust-accept-btn-handler')))
-                ActionChains(driver).move_to_element(cookie_popup_elem).click().perform()
-            except:
-                pass
-
-            # driver waits for the next page button to be viewable before moving and clicking
-            WebDriverWait(driver, 2).until(ec.element_to_be_clickable((By.CLASS_NAME, 'np')))
-            next_page_buttons = driver.find_elements_by_class_name('np')
-            time.sleep(4)
-            ActionChains(driver).move_to_element(next_page_buttons[-1]).click().perform()
-            
-            # following lines deal with the sign-up popup 
-            try:
-                popup_elem=WebDriverWait(driver, 2).until(ec.presence_of_element_located((By.ID, 'popover-x')))
-                ActionChains(driver).move_to_element(popup_elem).click().perform()
-            except:
-                pass
-            
-            
-            #printout
-            time_elapsed = time.time() - start
-            
-            printout = f'Step {time_index} --- Time elapsed so far {time_elapsed}; URLs stored : {len(sub_urls)}'
-            print(printout)
-            time_index+=1
-            
-        # Now we take our list of urls, preppend the root url to them and store them in a dataframe
-        job_urls_full = list(map(lambda x: str(self.root_url)+x , sub_urls))
-        # job_urls_full = list(dict.fromkeys(job_urls_full))
-        job_url_df = pd.DataFrame(job_urls_full, columns=['job_url'])
-        
-        self.job_post_urls_ = job_urls_full
-        print('URL column successfully stored as pandas obj')
-
-        return job_url_df
-    
-    
-    def get_job_text_html(self,url_df, url_column = 'job_url', headless=True):
-        """Retrieve the body of the job posting text using Selenium for browser interaction and
-        Beautiful Soup for parsing and HTML tag removal
-        url_df - (pandas dataframe/series) that contains our URLs
-        url_column - (str) name of the dataframe column that contains URLs, by default = 'job_url'
-        headless - (bool) whether to have the chrome window showing or not as it's scraping
-        """
-        start_job_descr = time.time()
-        job_descr_lst = []
-        # empty list to store urls from within the main job posting website
-        if str(type(url_df)) == 'pandas.core.frame.DataFrame':
-            url_list = list(url_df[url_column].values)
-        elif str(type(url_df)) == 'pandas.core.series.Series':
-            url_list = list(url_df)
-        else:
-            url_list = list(url_df[url_column].values)
-            
-
-        #init the selenium driver
-        chrome_options = Options()
-        if headless:
-            chrome_options.add_argument("--headless")
-        driver = webdriver.Chrome('/Users/ipreoteasa/Desktop/Io/chromedriver_2', 
-                                 options=chrome_options)
-        
-        job_descr_list = []
-        
-        for url in url_list:
-            driver.get(url)
-            time.sleep(5)
-            dom =  driver.page_source
-            job_soup = BeautifulSoup(dom, 'lxml')
-            job_soup_title = job_soup.find(name='div', 
-                                           attrs= {'class': 'jobsearch-JobInfoHeader-title-container'})
-            
-            job_soup_descr = job_soup.find(name='div', 
-                                           attrs= {'class': 'jobsearch-jobDescriptionText', 
-                                                   'id':'jobDescriptionText'})
-            
-            job_soup_company = job_soup.find(name='div', 
-                                           attrs= {'class': 'jobsearch-InlineCompanyRating icl-u-xs-mt--xs jobsearch-DesktopStickyContainer-companyrating'})
-            try:
-                job_soup_title_txt = job_soup_title.get_text()
-                self.job_titles_lst_.append(job_soup_title_txt)
-            except:
-                pass
-            
-            try:
-                job_soup_descr_txt = job_soup_descr.get_text()
-                self.job_descr_lst_.append(job_soup_descr_txt)
-            except:
-                pass
-                
-            try:
-                job_soup_comp_txt = job_soup_company.get_text()
-                self.companies_lst_.append(job_soup_comp_txt)
-            except:
-                pass
-            
-            self.job_post_dom_.append(job_soup)
-            self.scrape_asctimes.append(time.asctime())
-            
-            if (len(self.job_descr_lst_)%50 ==0):
-                time_elapsed_get_jobs = time.time() - start_job_descr
-                printout = f'--- Time elapsed so far {time_elapsed_get_jobs}; jobs stored so far:  {len(self.job_descr_lst_)}'
-                print(printout)
-                
-        return            
-    
-    def get_jobs_df(self):
-        """Functions assembles a Pandas dataframe with 5 columns:
-        URLs of job posts; the company; the job titles; the job
-        description text and also the entire html of the job post
-        page, in case the user would like to to any more data
-        extraction from that data
-        """
-        data = pd.DataFrame({
-                            'company': self.companies_lst_,
-                            'job_title' : self.job_titles_lst_,
-                            'job_descr' : self.job_descr_lst_,
-                            'job_post_html' : self.job_post_dom_,
-                            'time_of_scrape' : self.scrape_asctimes})
-        
-        data['job_search_term'] = str(self.search_term_job)
-        data['job_location'] = str(self.location)
-        
-        return data
-    
-
-
-
-#################################TEXT MINING#####################################
+       
+################################TEXT MINING#####################################
 
 
 def get_salary(dom, parser = 'html', regex_pattern_salary = ['£[0-9]*[,]*[0-9]+[ ]+[a]+'], 
@@ -477,6 +302,7 @@ def full_clean_and_store(file_path, new_file_name):
     df['Num_reviews'] = df.company.apply(get_num_reviews)
     df.company = df.company.apply(remove_reviews)
     df.drop(columns=['job_post_html'], axis=1, inplace=True)
+    df['date'] = pd.to_datetime(df.time_of_scrape).dt.date
     df.to_csv(new_file_name+'_CLEAN.csv')
     return
 
@@ -552,13 +378,13 @@ def gen_cloud(data, max_words_num : int, stop_words = None,
     plt.imshow(cloud)
     plt.title(cloud_title)
     plt.axis("off")
-    plt.show();
-    return
+    plt.show()
+    return cloud
 
 
 def get_top_n_df(list_of_pd_series, list_new_df_titles, tokenizer_obj, stop_words_list, 
                   plot_title = 'Term Frequency distribution', num_terms=20, 
-                  figsize = (10,10), ngram_number=1, lower_case=True, 
+                  figsize = (10,10), ngram_number=1, lower_case=True, normalise=True
                  ):
     
     top_n_df = pd.DataFrame()
@@ -567,8 +393,10 @@ def get_top_n_df(list_of_pd_series, list_new_df_titles, tokenizer_obj, stop_word
     plt.ioff()
     for i,pd_series in enumerate(list_of_pd_series):
         
+        cur_var = list_new_df_titles[i]
+        
         f_dist_dict = plot_freqdist_from_series(pd_series, tokenizer_obj, stop_words_list, 
-                              title = '{} for {}'.format(plot_title, list_new_df_titles[i]), num_terms=num_terms, 
+                              title = '{} for {}'.format(plot_title, cur_var), num_terms=num_terms, 
                               figsize = figsize, ngram_number=ngram_number, lower_case=lower_case);
         
         sort_dict = { k: v for k, v in sorted(f_dist_dict.items(), key=lambda item: item[1] , reverse=True)}
@@ -576,32 +404,36 @@ def get_top_n_df(list_of_pd_series, list_new_df_titles, tokenizer_obj, stop_word
         sort_val = list(sort_dict.values())
         sort_keys = list(sort_dict.keys())
 
+        total_n = len(sort_val)
         top_n_v = sort_val[:num_terms]
+        if normalise:
+            top_n_v = [n_val/total_n for n_val in top_n_v]
+        
         top_n_k = sort_keys[:num_terms]
 
         top_n_df_single = pd.DataFrame({'terms':top_n_k, 
-                                 'freq_in_{}'.format(list_new_df_titles[i]):top_n_v})
+                                 'freq_in_{}'.format(cur_var):top_n_v})
 
-            
+        
         list_of_topn_df.append(top_n_df_single)
         
     for pd_df in list_of_topn_df:
         top_n_df = top_n_df.append(pd_df)
 
-    plt.ion()
+#     plt.ion()
     return top_n_df
 
 
 def plot_term_bar(final_title, 
                   list_of_pd_series, list_new_df_titles, tokenizer_obj, stop_words_list_, 
                   plot_title = 'Term Frequency distribution', num_terms=20, 
-                  figsize = (10,10), ngram_number=1, lower_case=True, 
+                  figsize = (10,10), ngram_number=1, lower_case=True, normalise=True,
                   save_fig=False, save_fig_name=None
                  ):
     
     plot_df = get_top_n_df(list_of_pd_series, list_new_df_titles, tokenizer_obj, stop_words_list_, 
-                  plot_title = 'Term Frequency distribution', num_terms=num_terms, 
-                  figsize = (figsize[0]/4, figsize[1]/4), ngram_number=ngram_number, lower_case=lower_case, 
+                  plot_title = plot_title, num_terms=num_terms, 
+                  figsize = (figsize[0]/4, figsize[1]/4), ngram_number=ngram_number, lower_case=lower_case, normalise=normalise
                  )
     
 
@@ -612,7 +444,13 @@ def plot_term_bar(final_title,
     
     merged_df = pd.melt(plot_df, id_vars='terms', var_name='search_term', value_name='frequency')
     plt.figure(figsize=(figsize))
-    plot = sns.barplot(y = 'terms', x = 'frequency', data=merged_df, hue='search_term' )  
+    if normalise:
+        x_label = 'normalised_frequency'
+    else:
+        x_label = 'absolute frequency'
+    
+    plot = sns.barplot(y = 'terms', x = 'frequency', data=merged_df, hue='search_term' )
+    plt.xlabel(x_label)
     plt.title(final_title)
     
     fig=plot.get_figure()

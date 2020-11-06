@@ -1,4 +1,28 @@
-# (WORK IN PROGRESS) Exploring the London Data Science job market
+# Exploring the (London) Data Science job market
+
+As a junior data scientist with high aspirations and goals I wanted to see just how much useful information I could single-handedly extract from webscraping job sites. 
+The project followed the PPDAC cycle:
+### Problem(s): 
+* I do not know what the differences are between roles for data scientists, ML Engineers and data analysts. This information would be useful in helping me decide which ones are generally more suited to my current skillset and interests
+* I also do not know what generally distinguishes NLP-focused roles other than experience with NLP techniques - for instance, are there salary divergences, different expectations in academic experience? How many job roles do you expect to find that are NLP-centred? 
+* How many jobs typically publicise salary ranges openly? 
+### Plan:
+* build a python object class that searches through indeed.co.uk and mines for relevant data (e.g. salary, description, title, company)
+* analyse and explore data for preliminary insights; formulate hypotheses (if applicable)
+* Extension: build python guided user interface (GUI) so that scraping and cleaning process can be automated
+### Data:
+* cleaned data using a variety of tools (e.g. BS4 and regular expressions); create tidy dataset suited to quick analysis
+* given the semi-structured nature of the data, decide on a. which data should be considered valid for analysis and b. what data storage method would be most suitable for the dataset
+### Analysis:
+* Differences in salary explored visually and via hypothesis tests (ANOVA) - 3b_Statistical_tests
+* Differences in description are explored using Term Frequency Distributions and Pointwise Mutual Information scores - notebook 1_Text_Exploration
+* Differences in description are also explored using Latent Dirichlet Allocation, informing us that there are emergent themes which may or may not correspond neatly to the search categories of the data 2_Topic_modelling
+### Conclusion: 
+
+###### 1. 
+###### 2. 
+###### 3. 
+
 
 Advice and information about the job market for Data Scienstists and Machine Learning (ML) Engineers abounds on the internet. 
 I wanted to have a look for myself at my own sampled data and see what conclusions I could draw from it.
