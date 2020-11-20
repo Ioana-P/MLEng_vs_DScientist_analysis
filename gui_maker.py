@@ -66,8 +66,8 @@ time_period_layout = [[sg.Text("What declared time period for salary data do you
                      ]
 
 clean_layout = [[sg.Text('Clean and preprocess data', (20,3)), sg.Text(size=(40,1)) ],
-                [sg.Text('CSV file path', (20,10)), sg.In(size=(30,1), enable_events=True, key='-RAW-DATA-LOC-')],
-                [sg.Text('New file name', (20,1)), sg.In(size=(30,1), enable_events=True, key='-NEW-FILENAME-')],
+                [sg.Text('CSV file path', (20,10)), sg.In('raw_data/file_to_clean.csv', size=(30,1), enable_events=True, key='-RAW-DATA-LOC-')],
+                [sg.Text('New file name', (20,1)), sg.In('clean_data/file_name', size=(30,1), enable_events=True, key='-NEW-FILENAME-')],
                 [sg.Button('CLEAN')]]
 #instantiating the intro window
 intro_window = sg.Window("IndeedScraper", intro_layout)
@@ -105,14 +105,14 @@ while True:
         scrape_dict['search_term']= values['-SEARCH-TERM-']
         scrape_dict['location']= values['-SEARCH-LOCATION-']
         scrape_dict['num_jobs']= int(values['-NUM-JOBS-'])
-        scrape_dict['file_name'] = values['-NEW-FILENAME-']
+        scrape_dict['file_name'] = values['-FILENAME-']
         #calling webscraper from functions.py
         job_scraper = JobPostScraper(scrape_dict['root_url'], 
                                     scrape_dict['search_term'],
                                     scrape_dict['location'], 
                                     scrape_dict['num_jobs'])
 
-        job_url_df = job_scraper.get_job_link_urls()
+        job_url_df = job_scraper.get_job_link_urls(headless=False)
         job_scraper.get_job_text_html(job_url_df, headless=True)
         new_jobs_df = job_scraper.get_jobs_df()
         current_time = time.asctime().replace(' ', '_')

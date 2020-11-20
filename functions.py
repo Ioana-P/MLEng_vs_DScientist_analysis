@@ -129,6 +129,26 @@ class JobPostScraper:
     
 
 
+    # def get_job_link_urls(self, headless=False):
+    #     """Instance method that start a Selenium Chrome driver that scrapes a website and searches
+    #     for job URLs, paginates and then stores the num_jobs amount of URLs in a pandas dataframe
+    #     for use later down the pipeline.
+    #     headless - (bool) whether to have the chrome window showing or not as it's scraping
+    #     """
+    #     start = time.time()
+    #     # empty list to store urls from within the main job posting website
+    #     sub_urls = []
+    #     #init the selenium driver
+    #     chrome_options = Options()
+    #     if headless:
+    #         chrome_options.add_argument("--headless")
+    #     driver = webdriver.Chrome('/Users/ipreoteasa/Desktop/Io/chromedriver_2', 
+    #                              options=chrome_options)
+    
+    #     # accessing main page
+    #     driver.get(self.root_url)
+    #     time.sleep(2)
+       
     def get_job_link_urls(self, headless=False):
         """Instance method that start a Selenium Chrome driver that scrapes a website and searches
         for job URLs, paginates and then stores the num_jobs amount of URLs in a pandas dataframe
@@ -148,7 +168,188 @@ class JobPostScraper:
         # accessing main page
         driver.get(self.root_url)
         time.sleep(2)
-       
+        
+        
+#         DEBUGG: website introduced a new popup re consent to data collection practices, that is 
+#         messing up the scraping. For now will click on manually. Will return to this at some point
+#         try:
+#             time.sleep(3)
+#             pop_up_close = driver.find_element_by_class_name('icl_LegalConsentBanner-action')
+#             pop_up_close.click()
+#         except:
+#             print("CANT FIND BUTTON")
+        
+        #enter our job search terms
+        elem = driver.find_element_by_name('q')
+        elem.clear()
+        elem.send_keys(self.search_term_job)
+
+        time.sleep(2)
+        #enter our location search term
+        elem = driver.find_element_by_name('l')
+        elem.clear()
+        elem.send_keys(self.location)
+        elem.click()
+        time.sleep(1)
+        elem.send_keys(Keys.RETURN)
+
+        time.sleep(4)
+        
+        time_index = 0
+        
+        while len(sub_urls)<self.num_jobs:
+            try:
+                time.sleep(3)
+                pop_up_close = driver.find_element_by_class_name('popover-x')
+                pop_up_close.click()
+            except:
+                pass
+            
+            
+
+            # using BS4 on the page source to get all the urls
+            DOM = driver.page_source
+            soup = BeautifulSoup(DOM, 'lxml')
+            
+            jobtitle_soup = soup.find_all(name='a', 
+                                               attrs= {'class': 'jobtitle turnstileLink', 
+                                                       'data-tn-element':'jobTitle'})
+            
+            # getting href attributes and storing them
+            list_hrefs = [jobtitle_elem['href'] for jobtitle_elem in jobtitle_soup]
+            for href in list_hrefs:
+                sub_urls.append(href)
+                sub_urls = list(dict.fromkeys(sub_urls))
+                if len(sub_urls)>= self.num_jobs:
+                    break
+
+            #the following try deals with the cookies popup    
+            try:
+                cookie_popup_elem=WebDriverWait(driver, 2).until(ec.presence_of_element_located((By.ID, 'onetrust-accept-btn-handler')))
+                ActionChains(driver).move_to_element(cookie_popup_elem).click().perform()
+            except:
+                pass
+
+            # driver waits for the next page button to be viewable before moving and clicking
+            WebDriverWait(driver, 2).until(ec.element_to_be_clickable((By.CLASS_NAME, 'np')))
+            next_page_buttons = driver.find_elements_by_class_name('np')
+            time.sleep(4)
+            ActionChains(driver).move_to_element(next_page_buttons[-1]).click().perform()
+            
+            # following lines deal with the sign-up popup 
+            try:
+                popup_elem=WebDriverWait(driver, 2).until(ec.presence_of_element_located((By.ID, 'popover-x')))
+                ActionChains(driver).move_to_element(popup_elem).click().perform()
+            except:
+                pass
+            
+            
+            #printout
+            time_elapsed = time.time() - start
+            
+            printout = f'Step {time_index} --- Time elapsed so far {time_elapsed}; URLs stored : {len(sub_urls)}'
+            print(printout)
+            time_index+=1
+            
+        # Now we take our list of urls, preppend the root url to them and store them in a dataframe
+        job_urls_full = list(map(lambda x: str(self.root_url)+x , sub_urls))
+        # job_urls_full = list(dict.fromkeys(job_urls_full))
+        job_url_df = pd.DataFrame(job_urls_full, columns=['job_url'])
+        
+        self.job_post_urls_ = job_urls_full
+        print('URL column successfully stored as pandas obj')
+
+        return job_url_df
+    
+    
+    def get_job_text_html(self,url_df, url_column = 'job_url', headless=True):
+        """Retrieve the body of the job posting text using Selenium for browser interaction and
+        Beautiful Soup for parsing and HTML tag removal
+        url_df - (pandas dataframe/series) that contains our URLs
+        url_column - (str) name of the dataframe column that contains URLs, by default = 'job_url'
+        headless - (bool) whether to have the chrome window showing or not as it's scraping
+        """
+        start_job_descr = time.time()
+        job_descr_lst = []
+        # empty list to store urls from within the main job posting website
+        if str(type(url_df)) == 'pandas.core.frame.DataFrame':
+            url_list = list(url_df[url_column].values)
+        elif str(type(url_df)) == 'pandas.core.series.Series':
+            url_list = list(url_df)
+        else:
+            url_list = list(url_df[url_column].values)
+            
+
+        #init the selenium driver
+        chrome_options = Options()
+        if headless:
+            chrome_options.add_argument("--headless")
+        driver = webdriver.Chrome('/Users/ipreoteasa/Desktop/Io/chromedriver_2', 
+                                 options=chrome_options)
+        
+        job_descr_list = []
+        
+        for url in url_list:
+            driver.get(url)
+            time.sleep(5)
+            dom =  driver.page_source
+            job_soup = BeautifulSoup(dom, 'lxml')
+            job_soup_title = job_soup.find(name='div', 
+                                           attrs= {'class': 'jobsearch-JobInfoHeader-title-container'})
+            
+            job_soup_descr = job_soup.find(name='div', 
+                                           attrs= {'class': 'jobsearch-jobDescriptionText', 
+                                                   'id':'jobDescriptionText'})
+            
+            job_soup_company = job_soup.find(name='div', 
+                                           attrs= {'class': 'jobsearch-InlineCompanyRating icl-u-xs-mt--xs jobsearch-DesktopStickyContainer-companyrating'})
+            try:
+                job_soup_title_txt = job_soup_title.get_text()
+                self.job_titles_lst_.append(job_soup_title_txt)
+            except:
+                pass
+            
+            try:
+                job_soup_descr_txt = job_soup_descr.get_text()
+                self.job_descr_lst_.append(job_soup_descr_txt)
+            except:
+                pass
+                
+            try:
+                job_soup_comp_txt = job_soup_company.get_text()
+                self.companies_lst_.append(job_soup_comp_txt)
+            except:
+                pass
+            
+            self.job_post_dom_.append(job_soup)
+            self.scrape_asctimes.append(time.asctime())
+            
+            if (len(self.job_descr_lst_)%50 ==0):
+                time_elapsed_get_jobs = time.time() - start_job_descr
+                printout = f'--- Time elapsed so far {time_elapsed_get_jobs}; jobs stored so far:  {len(self.job_descr_lst_)}'
+                print(printout)
+                
+        return            
+    
+    def get_jobs_df(self):
+        """Functions assembles a Pandas dataframe with 5 columns:
+        URLs of job posts; the company; the job titles; the job
+        description text and also the entire html of the job post
+        page, in case the user would like to to any more data
+        extraction from that data
+        """
+        data = pd.DataFrame({
+                            'company': self.companies_lst_,
+                            'job_title' : self.job_titles_lst_,
+                            'job_descr' : self.job_descr_lst_,
+                            'job_post_html' : self.job_post_dom_,
+                            'time_of_scrape' : self.scrape_asctimes})
+        
+        data['job_search_term'] = str(self.search_term_job)
+        data['job_location'] = str(self.location)
+        
+        return data
+
 ################################TEXT MINING#####################################
 
 

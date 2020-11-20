@@ -44,7 +44,7 @@ def get_salary_data(url):
 
     return df
 
-salary_annual_df = get_salary_data('https://raw.githubusercontent.com/Ioana-P/MLEng_vs_DScientist_analysis/master/clean_data/salary_test.csv')
+salary_annual_df = get_salary_data('https://raw.githubusercontent.com/Ioana-P/MLEng_vs_DScientist_analysis/dev_gui/clean_data/salary_test.csv')
 salary_annual_df.rename({'salary_from_page_source_as_stated': 'salary'}, axis=1, inplace=True)
 salary_annual_df.salary.dropna(inplace=True)
 st.write(salary_annual_df.groupby('job_search_term').describe().round(1))
@@ -57,13 +57,33 @@ option_salary_period = st.sidebar.selectbox(
                 'Which salary periods to look at (recommend annual: "Y")?',
                 salary_annual_df.salary_from_page_source_time_period.unique())
 
-'Looking at ', option_salary_period, ' salary period.'
-
 option_jobs = st.sidebar.multiselect('Which group of jobs to look at for salary?',
                                     salary_annual_df.job_search_term.unique())
 
 mask_jobs = salary_annual_df['job_search_term'].isin(option_jobs)
 final_df = salary_annual_df[mask_jobs]
+
+if st.sidebar.button("Plot salaries"):
+    'Looking at salaries declared for the ', option_salary_period, ' time period.'
+    if final_df.size == 0:
+        print("Using all data")
+
+        fig = px.histogram(salary_annual_df.loc[salary_annual_df['salary_from_page_source_time_period']=='Y'],
+                            x = 'salary',
+                            color='job_search_term', marginal='box', 
+                            # hover_name=['job_title'], 
+                            hover_data=['job_title', 'company', 'salary'], 
+                            opacity=0.6, 
+                            )
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        fig = px.histogram(final_df.loc[final_df['salary_from_page_source_time_period']==option_salary_period], 
+                            x = 'salary', 
+                            color='job_search_term',
+                            marginal='box',
+                            hover_data=['job_title', 'company', 'salary']
+                            )
+        st.plotly_chart(fig, use_container_width=False)
 
 st.sidebar.write("Text analysis")
 
@@ -72,24 +92,6 @@ st.sidebar.write("Text analysis")
 #     new_data = data.loc[data.job_search_term==f'title: "{search_term}"']
 #     data_list.append(new_data)
 #     return data_list
-
-if final_df.size == 0:
-    print("Using all data")
-
-    fig = px.histogram(salary_annual_df, x = 'salary',
-                        color='job_search_term', marginal='box', 
-                        # hover_name=['job_title'], 
-                        hover_data=['job_title', 'company', 'salary'], 
-                        opacity=0.6, 
-                        )
-    st.plotly_chart(fig, use_container_width=True)
-else:
-    fig = px.histogram(final_df, x = 'salary', 
-                        color='job_search_term',
-                        marginal='box',
-                        hover_data=['job_title', 'company', 'salary']
-                        )
-    st.plotly_chart(fig, use_container_width=False)
 
 
 
@@ -172,22 +174,7 @@ if st.sidebar.button("Plot"):
               background_color, cloud_title='Word cloud for all jobs',
               cloud_height = wc_height, cloud_width = wc_width, cloud_max_font = max_font)
 
-# # fn for the UI
-# def main():
-#     st.write("# Trying out the sidebar too now!")
-#     st.write("[By Ioana P](https://github.com/Ioana-P)")
-#     max_word = st.sidebar.slider("Max words", 200, 3000, 200)
-#     max_font = st.sidebar.slider("Max Font Size", 50, 350, 60)
-#     # random = st.sidebar.slider("Random State", 30, 100, 42 )
-#     # image = st.file_uploader("Choose a file(preferably a silhouette)")
-#     text = st.text_area("Add text ..")
-#     if st.button("Plot"):
-#             # st.write("### Original image")
-#             # image = np.array(Image.open(image))
-#             # st.image(image, width=100, use_column_width=True)
-#             # st.write("### Word cloud")
-#             # st.write(cloud(image, text, max_word, max_font, random), use_column_width=True)
-#         gen_cloud(text_df.job_descr, max_word, datastopwords, 'white', cloud_title='Word cloud for all jobs')
 
-# if __name__=="main":
-#     main()
+
+
+    
